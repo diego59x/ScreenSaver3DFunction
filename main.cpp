@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include "GL/glut.h"
+#include <cstdlib>
+#include <time.h>
 
 void init();
 void display();
@@ -26,17 +28,17 @@ void init()
 
 }
 
-float f(double x, double z)
+float f(int moveFunX, int moveFunZ, double x, double z)
 {
-    //return 4*cos(sqrt(x*x+z*z));
-    return (x*x)-(z*z);
+    return moveFunX*(x*x)- moveFunZ*(z*z);
 }
 
-void normalVector(float x, float y, float z, float *norm)
+void normalVector(int moveFunX, int moveFunZ, float x, float y, float z, float *norm)
 {
-    norm[0] = 4*sin(sqrt(x*x+z*z))*x/sqrt(x*x+z*z);
+
+    norm[0] = moveFunX*sin(sqrt(x*x+z*z))*x/sqrt(x*x+z*z);
     norm[1] = 1;
-    norm[2] = 4*sin(sqrt(x*x+z*z))*z/sqrt(x*x+z*z);
+    norm[2] = moveFunZ*sin(sqrt(x*x+z*z))*z/sqrt(x*x+z*z);
     float d = norm[0]*norm[0] + norm[1]*norm[1] + norm[2]*norm[2];
     if(d > 0)
         for (int k = 0; k < 3; k++)
@@ -53,6 +55,11 @@ void display()
     float norm[3];
     double xGap=(xNear-xFar)/n;
     double zGap=(zNear-zFar)/m;
+
+    int moveFunX = (rand() % 6) - 3;
+    int moveFunZ = (rand() % 6) - 3;
+
+
     for (int i=0; i<n; i++)
     {
         for (int j=0; j<m; j++)
@@ -60,41 +67,41 @@ void display()
             glBegin(GL_LINE_LOOP);
                 float x = xFar + i*xGap;
                 float z = zFar + j*zGap;
-                float y = f(x,z);
+                float y = f(moveFunX, moveFunZ, x,z);
                 glVertex3f(x,y,z);
-                normalVector(x,y,z,norm);
+                normalVector(moveFunX, moveFunZ, x, y, z, norm);
                 glNormal3fv(norm);
                 x = xFar + i*xGap;
                 z = zFar + (j+1)*zGap;
-                y = f(x,z);
+                y = f(moveFunX, moveFunZ, x,z);
                 glVertex3f(x,y,z);
-                normalVector(x,y,z,norm);
+                normalVector(moveFunX, moveFunZ, x, y, z, norm);
                 glNormal3fv(norm);
                 x = xFar + (i+1)*xGap;
                 z = zFar + (j+1)*zGap;
-                y = f(x,z);
+                y = f(moveFunX, moveFunZ, x,z);
                 glVertex3f(x,y,z);
-                normalVector(x,y,z,norm);
+                normalVector(moveFunX, moveFunZ, x, y, z, norm);
                 glNormal3fv(norm);
             glEnd();
             glBegin(GL_LINE_LOOP);
                 x = xFar + i*xGap;
                 z = zFar + j*zGap;
-                y = f(x,z);
+                y = f(moveFunX, moveFunZ, x,z);
                 glVertex3f(x,y,z);
-                normalVector(x,y,z,norm);
+                normalVector(moveFunX, moveFunZ, x, y, z, norm);
                 glNormal3fv(norm);
                 x = xFar + (i+1)*xGap;
                 z = zFar + (j+1)*zGap;
-                y = f(x,z);
+                y = f(moveFunX, moveFunZ, x,z);
                 glVertex3f(x,y,z);
-                normalVector(x,y,z,norm);
+                normalVector(moveFunX, moveFunZ, x, y, z, norm);
                 glNormal3fv(norm);
                 x = xFar + (i+1)*xGap;
                 z = zFar + (j)*zGap;
-                y = f(x,z);
+                y = f(moveFunX, moveFunZ, x,z);
                 glVertex3f(x,y,z);
-                normalVector(x,y,z,norm);
+                normalVector(moveFunX, moveFunZ, x, y, z, norm);
                 glNormal3fv(norm);
             glEnd();
         }
@@ -115,11 +122,14 @@ void myIdle()
 
 int main(int argc, char** argv)
 {
+    // Seed of random
+    srand(time(0));
+
     glutInit(&argc,argv);
     glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGB);
     glutInitWindowSize(800,800);
     glutInitWindowPosition(10,10);
-    glutCreateWindow("3D Wireframe Solids");
+    glutCreateWindow("Screen saver function math :P");
     glutDisplayFunc(display);
     glutIdleFunc(myIdle);
     init();
