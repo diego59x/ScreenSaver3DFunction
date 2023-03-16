@@ -30,7 +30,7 @@ void init()
 
 float f(int moveFunX, int moveFunZ, double x, double z)
 {
-    return moveFunX*(x*x)- moveFunZ*(z*z);
+    return moveFunX*cos(sqrt(x*x+z*z));
 }
 
 void normalVector(int moveFunX, int moveFunZ, float x, float y, float z, float *norm)
@@ -56,8 +56,8 @@ void display()
     double xGap=(xNear-xFar)/n;
     double zGap=(zNear-zFar)/m;
 
-    int moveFunX = (rand() % 6) - 3;
-    int moveFunZ = (rand() % 6) - 3;
+    int moveFunX = ((int)time(NULL) % 6) - 3;
+    int moveFunZ = ((int)time(NULL) % 6) - 3;
 
 
     for (int i=0; i<n; i++)
@@ -111,12 +111,9 @@ void display()
 
 void myIdle()
 {
-    double zzz=0;
     thetaY += increment;
     if(thetaY > 360.0)
         thetaY -= 360.0;
-    for (int i=0; i<1000000; i++)
-        zzz = sqrt((double)i);
     glutPostRedisplay();
 }
 
