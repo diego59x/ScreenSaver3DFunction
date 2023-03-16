@@ -69,40 +69,28 @@ void display()
                 float z = zFar + j*zGap;
                 float y = f(moveFunX, moveFunZ, x,z);
                 glVertex3f(x,y,z);
-                normalVector(moveFunX, moveFunZ, x, y, z, norm);
-                glNormal3fv(norm);
                 x = xFar + i*xGap;
                 z = zFar + (j+1)*zGap;
                 y = f(moveFunX, moveFunZ, x,z);
                 glVertex3f(x,y,z);
-                normalVector(moveFunX, moveFunZ, x, y, z, norm);
-                glNormal3fv(norm);
                 x = xFar + (i+1)*xGap;
                 z = zFar + (j+1)*zGap;
                 y = f(moveFunX, moveFunZ, x,z);
                 glVertex3f(x,y,z);
-                normalVector(moveFunX, moveFunZ, x, y, z, norm);
-                glNormal3fv(norm);
             glEnd();
             glBegin(GL_LINE_LOOP);
                 x = xFar + i*xGap;
                 z = zFar + j*zGap;
                 y = f(moveFunX, moveFunZ, x,z);
                 glVertex3f(x,y,z);
-                normalVector(moveFunX, moveFunZ, x, y, z, norm);
-                glNormal3fv(norm);
                 x = xFar + (i+1)*xGap;
                 z = zFar + (j+1)*zGap;
                 y = f(moveFunX, moveFunZ, x,z);
                 glVertex3f(x,y,z);
-                normalVector(moveFunX, moveFunZ, x, y, z, norm);
-                glNormal3fv(norm);
                 x = xFar + (i+1)*xGap;
                 z = zFar + (j)*zGap;
                 y = f(moveFunX, moveFunZ, x,z);
                 glVertex3f(x,y,z);
-                normalVector(moveFunX, moveFunZ, x, y, z, norm);
-                glNormal3fv(norm);
             glEnd();
         }
     }
@@ -115,7 +103,7 @@ void myIdle()
     thetaY += increment;
     if(thetaY > 360.0)
         thetaY -= 360.0;
-    for (int i=0; i<1000000; i++)
+    for (int i=0; i<100000000; i++)
         zzz = sqrt((double)i);
     glutPostRedisplay();
 }
