@@ -7,6 +7,8 @@
 #include <GL/glut.h>
 #include <cstdlib>
 #include <time.h>
+#include <vector>
+#include <omp.h>
 
 using namespace std;
 
@@ -21,7 +23,7 @@ float thetaY = 0;
 float thetaX = 20;
 float increment = 0.5;
 float xNear = -6, xFar = 6, yNear = -6, yFar = 6, zNear = -6, zFar = 6;
-float n = 50, m = 50;
+float n = 100, m = 100;
 float moveFunX = 0.0;
 int t_start = time(NULL), t_end, frames = 0;
 
@@ -35,7 +37,6 @@ void init()
 
 float f(float moveFunX, double x, double z)
 {
-    //return moveFunX*(x*x)-(z*z);
     return moveFunX*cos(sqrt(x*x+z*z)*moveFunX*0.25);
 }
 
@@ -50,16 +51,10 @@ void normalVector(float moveFunX, float x, float y, float z, float *norm)
             norm[k]/=sqrt(d);
 }
 
-void displayFPS(string fps) {
-    glColor3f(0.0, 0.0, 0.0);
-    glRasterPos2f(10, 10);
-    for (int i = 0; i < fps.length(); i++) {
-        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, fps[i]);
-    }
-}
-
 void display()
 {
+    // tiempo de inicio
+    double t_inicial = omp_get_wtime();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -68,36 +63,56 @@ void display()
     float norm[3];
     double xGap=(xNear-xFar)/n;
     double zGap=(zNear-zFar)/m;
-    for (int i=0; i<n; i++)
+    float values[100][100][12];
+    #pragma omp parallel for collapse(2) num_threads(10) schedule(static, 1)
+    for (int i = 0; i < (int)n; i++)
     {
-        for (int j=0; j<m; j++)
+        for (int j = 0; j < (int)m; j++)
+        {
+            float x = xFar + i*xGap;
+            values[i][j][0] = x;
+            float z = zFar + j*zGap;
+            values[i][j][1] = z;
+            float y = f(moveFunX, x,z);
+            values[i][j][2] = y;
+            float x2 = xFar + i*xGap;
+            values[i][j][3] = x2;
+            float z2 = zFar + (j+1)*zGap;
+            values[i][j][4] = z2;
+            float y2 = f(moveFunX, x2,z2);
+            values[i][j][5] = y2;
+            float x3 = xFar + (i+1)*xGap;
+            values[i][j][6] = x3;
+            float z3 = zFar + (j+1)*zGap;
+            values[i][j][7] = z3;
+            float y3 = f(moveFunX, x3,z3);
+            values[i][j][8] = y3;
+            //  light direction
+            float light[3] = {0,0,1};
+            float dot = norm[0]*light[0] + norm[1]*light[1] + norm[2]*light[2];
+            float r = ((x + 6) / 12)*0.8 + 0.5*dot;
+            values[i][j][9] = r;
+            float g = ((z + 6) / 12)*0.8 + 0.5*dot;
+            values[i][j][10] = g;
+            float b = ((z + 6) / 12)*0.8 + 0.5*dot;
+            values[i][j][11] = b;
+        }
+    }
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < m; j++)
         {
             glBegin(GL_LINE_LOOP);
-                float x = xFar + i*xGap;
-                float z = zFar + j*zGap;
-                float y = f(moveFunX, x,z);
-                glVertex3f(x,y,z);
-                normalVector(moveFunX,x,y,z,norm);
+                glVertex3f(values[i][j][0],values[i][j][1],values[i][j][2]);
+                normalVector(moveFunX,values[i][j][0],values[i][j][1],values[i][j][2],norm);
                 glNormal3fv(norm);
-                x = xFar + i*xGap;
-                z = zFar + (j+1)*zGap;
-                y = f(moveFunX, x,z);
-                glVertex3f(x,y,z);
-                normalVector(moveFunX,x,y,z,norm);
+                glVertex3f(values[i][j][3],values[i][j][4],values[i][j][5]);
+                normalVector(moveFunX,values[i][j][3],values[i][j][4],values[i][j][5],norm);
                 glNormal3fv(norm);
-                x = xFar + (i+1)*xGap;
-                z = zFar + (j+1)*zGap;
-                y = f(moveFunX, x,z);
-                glVertex3f(x,y,z);
-                normalVector(moveFunX,x,y,z,norm);
+                glVertex3f(values[i][j][6],values[i][j][7],values[i][j][8]);
+                normalVector(moveFunX,values[i][j][6],values[i][j][7],values[i][j][8],norm);
                 glNormal3fv(norm);
-                //  light direction
-                float light[3] = {0,0,1};
-                float dot = norm[0]*light[0] + norm[1]*light[1] + norm[2]*light[2];
-                float r = ((x + 6) / 12)*0.8 + 0.5*dot;
-                float g = ((z + 6) / 12)*0.8 + 0.5*dot;
-                float b = ((z + 6) / 12)*0.8 + 0.5*dot;
-                glColor3f(r,g,b);
+                glColor3f(values[i][j][9],values[i][j][10],values[i][j][11]);
             glEnd();
         }
     }
@@ -107,17 +122,21 @@ void display()
     if (t_end - t_start >= 1) {
         string fps = "FPS: " + to_string(frames / (t_end - t_start));
         cout << fps << endl;
-        displayFPS(fps);
         frames = 0;
         t_start = time(NULL);
     }
+    // tiempo final
+    double t_final = omp_get_wtime();
+    // tiempo transcurrido
+    double t_total = t_final - t_inicial;
+    //cout << "Tiempo transcurrido: " << t_total << endl;
 }
 
 void idle()
 {
-    thetaY += increment;
+    /*thetaY += increment;
     if(thetaY > 360.0)
-        thetaY -= 360.0;
+        thetaY -= 360.0;*/
     moveFunX = 5* cos((float)glutGet(GLUT_ELAPSED_TIME)/1000);
     glutPostRedisplay();
 }
