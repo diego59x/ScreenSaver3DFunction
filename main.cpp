@@ -23,7 +23,7 @@ float thetaY = 0;
 float thetaX = 20;
 float increment = 0.5;
 float xNear = -6, xFar = 6, yNear = -6, yFar = 6, zNear = -6, zFar = 6;
-float n = 100, m = 100;
+float n = 128, m = 128;
 float moveFunX = 0.0;
 int t_start = time(NULL), t_end, frames = 0;
 
@@ -63,8 +63,8 @@ void display()
     float norm[3];
     double xGap=(xNear-xFar)/n;
     double zGap=(zNear-zFar)/m;
-    float values[100][100][12];
-    #pragma omp parallel for collapse(2) num_threads(10) schedule(static, 1)
+    float values[128][128][12];
+    #pragma omp parallel for collapse(2) num_threads(1) schedule(static, 1)
     for (int i = 0; i < (int)n; i++)
     {
         for (int j = 0; j < (int)m; j++)
@@ -75,18 +75,21 @@ void display()
             values[i][j][1] = z;
             float y = f(moveFunX, x,z);
             values[i][j][2] = y;
+            normalVector(moveFunX, x, z, y, norm);
             float x2 = xFar + i*xGap;
             values[i][j][3] = x2;
             float z2 = zFar + (j+1)*zGap;
             values[i][j][4] = z2;
             float y2 = f(moveFunX, x2,z2);
             values[i][j][5] = y2;
+            normalVector(moveFunX, x2, z2, y2, norm);
             float x3 = xFar + (i+1)*xGap;
             values[i][j][6] = x3;
             float z3 = zFar + (j+1)*zGap;
             values[i][j][7] = z3;
             float y3 = f(moveFunX, x3,z3);
             values[i][j][8] = y3;
+            normalVector(moveFunX, x3, z3, y3, norm);
             //  light direction
             float light[3] = {0,0,1};
             float dot = norm[0]*light[0] + norm[1]*light[1] + norm[2]*light[2];
@@ -104,13 +107,10 @@ void display()
         {
             glBegin(GL_LINE_LOOP);
                 glVertex3f(values[i][j][0],values[i][j][1],values[i][j][2]);
-                normalVector(moveFunX,values[i][j][0],values[i][j][1],values[i][j][2],norm);
                 glNormal3fv(norm);
                 glVertex3f(values[i][j][3],values[i][j][4],values[i][j][5]);
-                normalVector(moveFunX,values[i][j][3],values[i][j][4],values[i][j][5],norm);
                 glNormal3fv(norm);
                 glVertex3f(values[i][j][6],values[i][j][7],values[i][j][8]);
-                normalVector(moveFunX,values[i][j][6],values[i][j][7],values[i][j][8],norm);
                 glNormal3fv(norm);
                 glColor3f(values[i][j][9],values[i][j][10],values[i][j][11]);
             glEnd();
@@ -129,14 +129,14 @@ void display()
     double t_final = omp_get_wtime();
     // tiempo transcurrido
     double t_total = t_final - t_inicial;
-    //cout << "Tiempo transcurrido: " << t_total << endl;
+    cout << "Tiempo transcurrido: " << t_total << endl;
 }
 
 void idle()
 {
-    /*thetaY += increment;
+    thetaY += increment;
     if(thetaY > 360.0)
-        thetaY -= 360.0;*/
+        thetaY -= 360.0;
     moveFunX = 5* cos((float)glutGet(GLUT_ELAPSED_TIME)/1000);
     glutPostRedisplay();
 }
