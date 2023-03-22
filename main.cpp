@@ -17,11 +17,11 @@ void normalVector(float moveFunA, float x, float y, float z, float *norm);
 
 float thetaY = 0; // angulo de rotacion de la camara en el eje Y
 float thetaX = 25; // angulo de rotacion de la camara en el eje X
-float increment = 0.5; // incremento de rotacion
+float rotationIncrement = 0.5, ampIncrement = 5, velIncrement = 1000; // incrementos
 float xNear = -15, xFar = 15, yNear = -15, yFar = 15, zNear = -15, zFar = 15; // limites de la camara
 // Definicion en los ejes X e Y del plano
-const int n = 300;
-const int m = 300;
+const int n = 80;
+const int m = 80;
 float moveFunX = 0.0; // parametro para mover la funcion (animacion)
 int t_start = time(NULL), t_end, frames = 0; // variables para calcular el fps
 
@@ -180,12 +180,47 @@ void display()
 void idle()
 {
     // mueve la camara en 360, al rededor de la funcion
-    thetaY += increment;
+    thetaY += rotationIncrement;
     if(thetaY > 360.0)
         thetaY -= 360.0;
     // mueve la funcion en el eje x, la anima
-    moveFunX = 5* cos((float)glutGet(GLUT_ELAPSED_TIME)/1000);
+    moveFunX = ampIncrement*cos((float)glutGet(GLUT_ELAPSED_TIME)/velIncrement);
     glutPostRedisplay();
+}
+
+void keyboard(unsigned char key, int x, int y)
+{
+    switch(key)
+    {
+        // escape
+        case 27:
+            exit(0);
+            break;
+        case 'q':
+            if (rotationIncrement > -3)
+                rotationIncrement -= 0.1;
+            break;
+        case 'w':
+            if (rotationIncrement < 3)
+                rotationIncrement += 0.1;
+            break;
+        case 'a':
+            if (ampIncrement > 0.1)
+                ampIncrement -= 0.1;
+            break;
+        case 's':
+            if (ampIncrement < 6)
+                ampIncrement += 0.5;
+            break;
+        case 'z':
+            if (velIncrement > 300)
+                velIncrement -= 100;
+            break;
+        case 'x':
+            if (velIncrement < 2000)
+                velIncrement += 100;
+            break;
+    }
 }
 
 int main(int argc, char** argv)
@@ -195,6 +230,7 @@ int main(int argc, char** argv)
     glutInitWindowSize(800,800);
     glutInitWindowPosition(10,10);
     glutCreateWindow("Screen saver function math :P");
+    glutKeyboardFunc(keyboard);
     glutDisplayFunc(display);
     glutIdleFunc(idle);
     init();
