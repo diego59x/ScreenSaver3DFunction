@@ -48,13 +48,9 @@ float f(float moveFunX, double x, double z)
 */
 void normalVector(float moveFunX, float x, float y, float z, float *norm)
 {
-    norm[0] = moveFunX*sin(sqrt(x*x+z*z))*x/sqrt(x*x+z*z);
-    norm[1] = 1;
-    norm[2] = moveFunX*sin(sqrt(x*x+z*z))*z/sqrt(x*x+z*z);
-    float d = norm[0]*norm[0] + norm[1]*norm[1] + norm[2]*norm[2];
-    if(d > 0)
-        for (int k = 0; k < 3; k++)
-            norm[k]/=sqrt(d);
+    norm[0] = -sin(sqrt(x*x+y*y+z*z)*moveFunX*0.25)*x/sqrt(x*x+y*y+z*z);
+    norm[1] = -sin(sqrt(x*x+y*y+z*z)*moveFunX*0.25)*y/sqrt(x*x+y*y+z*z);
+    norm[2] = -sin(sqrt(x*x+y*y+z*z)*moveFunX*0.25)*z/sqrt(x*x+y*y+z*z);
 }
 
 /*
@@ -99,21 +95,21 @@ void display()
             float norm3[3];
             normalVector(moveFunX, x3, z3, y3, norm3);
             // color de la luz a partir de la direccion para el primer punto
-            float light[3] = {0,0,1};
+            float light[3] = {0,1,1};
             float dot = norm[0]*light[0] + norm[1]*light[1] + norm[2]*light[2];
-            float r = ((x + 6) / 12)*0.8 + 0.5*dot;
-            float g = ((z + 6) / 12)*0.8 + 0.5*dot;
-            float b = ((z + 6) / 12)*0.8 + 0.5*dot;
+            float r = ((x + xFar) / (xFar*2))*0.8 + 0.5*dot;
+            float g = ((z + xFar) / (xFar*2))*0.8 + 0.5*dot;
+            float b = ((z + xFar) / (xFar*2))*0.8 + 0.5*dot;
             // direccion de la luz para el segundo punto
             float dot2 = norm2[0]*light[0] + norm2[1]*light[1] + norm2[2]*light[2];
-            float r2 = ((x2 + 6) / 12)*0.8 + 0.5*dot2;
-            float g2 = ((z2 + 6) / 12)*0.8 + 0.5*dot2;
-            float b2 = ((z2 + 6) / 12)*0.8 + 0.5*dot2;
+            float r2 = ((x2 + xFar) / (xFar*2))*0.8 + 0.5*dot2;
+            float g2 = ((z2 + xFar) / (xFar*2))*0.8 + 0.5*dot2;
+            float b2 = ((z2 + xFar) / (xFar*2))*0.8 + 0.5*dot2;
             // direccion de la luz para el tercer punto
             float dot3 = norm3[0]*light[0] + norm3[1]*light[1] + norm3[2]*light[2];
-            float r3 = ((x3 + 6) / 12)*0.8 + 0.5*dot3;
-            float g3 = ((z3 + 6) / 12)*0.8 + 0.5*dot3;
-            float b3 = ((z3 + 6) / 12)*0.8 + 0.5*dot3;
+            float r3 = ((x3 + xFar) / (xFar*2))*0.8 + 0.5*dot3;
+            float g3 = ((z3 + xFar) / (xFar*2))*0.8 + 0.5*dot3;
+            float b3 = ((z3 + xFar) / (xFar*2))*0.8 + 0.5*dot3;
             // dibuja el triangulo (Loop para unir los 3 puntos)
             glBegin(GL_LINE_LOOP);
                 // dibuja el primer punto del triangulo
