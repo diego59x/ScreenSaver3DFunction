@@ -18,10 +18,11 @@ void normalVector(float moveFunA, float x, float y, float z, float *norm);
 float thetaY = 0; // angulo de rotacion de la camara en el eje Y
 float thetaX = 25; // angulo de rotacion de la camara en el eje X
 float rotationIncrement = 0.5, ampIncrement = 5, velIncrement = 1000; // incrementos
+int rotationDirection = 1; // direccion de la rotacion de la camara
 float xNear = -15, xFar = 15, yNear = -15, yFar = 15, zNear = -15, zFar = 15; // limites de la camara
 // Definicion en los ejes X e Y del plano
-const int n = 80;
-const int m = 80;
+const int n = 300;
+const int m = 300;
 float moveFunX = 0.0; // parametro para mover la funcion (animacion)
 int t_start = time(NULL), t_end, frames = 0; // variables para calcular el fps
 
@@ -65,7 +66,7 @@ void display()
     // resetear transformaciones
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    // rotar la camara (solo thetaY cambia continuamente)
+    // rotar la camara (cambia continuamente)
     glRotatef(thetaX,1,0,0);
     glRotatef(thetaY,0,1,0);
     // espacio entre cada punto del plano
@@ -76,7 +77,7 @@ void display()
     static float colors[n][m][9];
     static float norm[n][m][3][3];
     // hace los calculos en paralelo de los valores para pintar cada triangulo del plano
-    #pragma omp parallel for collapse(2) num_threads(10) schedule(static, 1)
+    #pragma omp parallel for num_threads(10) collapse(2) schedule(dynamic) shared(points, colors, norm)
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < m; j++)
@@ -167,7 +168,7 @@ void display()
     double t_final = omp_get_wtime();
     // tiempo transcurrido en segundos de este renderizado
     double t_total = t_final - t_inicial;
-    cout << "Tiempo transcurrido: " << t_total << endl;
+    //cout << "Tiempo transcurrido: " << t_total << endl;
 }
 
 /*
@@ -176,9 +177,11 @@ void display()
 void idle()
 {
     // mueve la camara en 360, al rededor de la funcion
-    thetaY += rotationIncrement;
-    if(thetaY > 360.0)
-        thetaY -= 360.0;
+    if (thetaX > 360.0 && rotationDirection == 1)
+        rotationDirection = -1;
+    else if (thetaX < -360.0 && rotationDirection == -1)
+        rotationDirection = 1;
+    thetaX += rotationIncrement*rotationDirection;
     // mueve la funcion en el eje x, la anima
     moveFunX = ampIncrement*cos((float)glutGet(GLUT_ELAPSED_TIME)/velIncrement);
     glutPostRedisplay();
