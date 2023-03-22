@@ -30,7 +30,7 @@ int t_start = time(NULL), t_end, frames = 0; // variables para calcular el fps
 */
 void init()
 {
-    glClearColor(1.0, 1.0, 1.0, 0); // color de fondo
+    glClearColor(0, 0, 0, 0); // color de fondo
     glMatrixMode(GL_PROJECTION);
     glOrtho(xNear, xFar, yNear, yFar, zNear, zFar);
 }
